@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 import logging
-from flask import Flask, request, render_template, send_file, redirect, url_for, flash
+from flask import Flask, request, render_template, send_file
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -28,43 +28,38 @@ def download_video():
     if not url:
         return "Please enter a YouTube URL.", 400
 
-    youtubedl_path = os.path.join(base_path, "youtube-dl.exe")
+    youtubedl_path = os.path.join(base_path, "yt-dlp.exe")  # Updated to yt-dlp
     if not os.path.exists(youtubedl_path):
-        logging.error("youtube-dl.exe not found.")
-        return "youtube-dl.exe not found.", 500
+        logging.error("yt-dlp.exe not found.")
+        return "yt-dlp.exe not found.", 500
 
     output_dir = base_path
-    command = [youtubedl_path, '-v', '-f', 'bestvideo+bestaudio/best', '-o', os.path.join(output_dir, '%(title)s.%(ext)s'), url]
+    command = [
+        youtubedl_path, 
+        '-v', 
+        '-x', 
+        '--audio-format', 'mp3', 
+        '--audio-quality', '0',  # Highest audio quality
+        '-o', os.path.join(output_dir, '%(title)s.%(ext)s'), 
+        url
+    ]
 
     try:
         logging.info(f"Running command: {' '.join(command)}")
         run_subprocess(command)
 
-        video_files = [f for f in os.listdir(output_dir) if f.endswith(('.mp4', '.webm'))]
-        if not video_files:
-            raise FileNotFoundError("No video files found in the output directory.")
+        mp3_files = [f for f in os.listdir(output_dir) if f.endswith('.mp3')]
+        if not mp3_files:
+            raise FileNotFoundError("No MP3 files found in the output directory.")
 
-        video_path = os.path.join(output_dir, video_files[0])
-        logging.debug(f"Found video file: {video_path}")
-        mp3_path = convert_to_mp3(video_path)
+        mp3_path = os.path.join(output_dir, mp3_files[0])
+        logging.debug(f"Found MP3 file: {mp3_path}")
 
         return send_file(mp3_path, as_attachment=True)
 
     except Exception as e:
-        logging.error(f"Error during download or conversion: {str(e)}")
+        logging.error(f"Error during download: {str(e)}")
         return str(e), 500
-
-def convert_to_mp3(video_path):
-    mp3_save_path = os.path.splitext(video_path)[0] + ".mp3"
-    ffmpeg_path = os.path.join(base_path, "tuner.exe")
-    if not os.path.exists(ffmpeg_path):
-        raise FileNotFoundError("tuner.exe not found in the same folder as this script.")
-
-    command = [ffmpeg_path, '-i', video_path, '-b:a', '320k', '-q:a', '0', mp3_save_path]
-    logging.info(f"Running command: {' '.join(command)}")
-    run_subprocess(command)
-
-    return mp3_save_path
 
 def run_subprocess(command):
     """Helper function to run a subprocess command and log output."""
