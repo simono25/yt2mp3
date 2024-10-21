@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .container {
+            background-color: #1f1f1f;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .input-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #333;
+            color: #e0e0e0;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            background-color: #444;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #6200ea;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        button:hover {
+            background-color: #3700b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6200ea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .messages {
+            margin-top: 20px;
+        }
+
+        .message {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <h1>YouTube Video Downloader</h1>
+            <form id="download-form" action="{{ url_for('download_video') }}" method="POST">
+                <div class="input-container">
+                    <input type="text" id="url" name="url" placeholder="Enter YouTube URL" required>
+                </div>
+                <button type="submit" id="download-btn"><i class="fas fa-download"></i> Download</button>
+            </form>
+
+            <div class="loader" id="loader" style="display: none;"></div>
+
+            <div id="message-container"></div>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="messages">
+                  {% for message in messages %}
+                    <div class="message">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('download-form');
+            const loader = document.getElementById('loader');
+            const messageContainer = document.getElementById('message-container');
+            const downloadButton = document.getElementById('download-btn');
+
+            form.addEventListener('submit', (e) => {
+                const urlInput = document.getElementById('url').value;
+
+                // Simple URL validation (ensure the input isn't empty or invalid)
+                if (!urlInput.trim()) {
+                    e.preventDefault();
+                    showMessage("Please enter a valid YouTube URL.", "error");
+                    return;
+                }
+
+                // Show loading spinner and hide the download button
+                downloadButton.disabled = true;
+                loader.style.display = 'block';
+            });
+
+            // Function to display messages dynamically
+            function showMessage(message, type) {
+                const msgDiv = document.createElement('div');
+                msgDiv.classList.add('message', type);
+                msgDiv.innerText = message;
+                messageContainer.appendChild(msgDiv);
+
+                // Remove the message after 5 seconds
+                setTimeout(() => {
+                    msgDiv.remove();
+                }, 5000);
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</body>
+</html>
