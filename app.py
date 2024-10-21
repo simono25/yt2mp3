@@ -22,28 +22,24 @@ def home():
 
 @app.route('/download', methods=['POST'])
 def download_video():
-    url = request.form.get('url')  # Use request.form.get for better safety
+    url = request.form.get('url')
     logging.debug(f"Entered URL: {url}")
 
     if not url:
-        flash("Please enter a YouTube URL.", "error")
-        return redirect(url_for('home'))
+        return "Please enter a YouTube URL.", 400
 
     youtubedl_path = os.path.join(base_path, "youtube-dl.exe")
     if not os.path.exists(youtubedl_path):
-        flash("youtube-dl.exe not found in the same folder as this script.", "error")
         logging.error("youtube-dl.exe not found.")
-        return redirect(url_for('home'))
+        return "youtube-dl.exe not found.", 500
 
-    output_dir = base_path  # You can modify this to use a specific output directory
+    output_dir = base_path
     command = [youtubedl_path, '-v', '-f', 'bestvideo+bestaudio/best', '-o', os.path.join(output_dir, '%(title)s.%(ext)s'), url]
 
     try:
         logging.info(f"Running command: {' '.join(command)}")
         run_subprocess(command)
-        flash("Video downloaded successfully!", "success")
 
-        # Check for video files in the output directory
         video_files = [f for f in os.listdir(output_dir) if f.endswith(('.mp4', '.webm'))]
         if not video_files:
             raise FileNotFoundError("No video files found in the output directory.")
@@ -55,9 +51,8 @@ def download_video():
         return send_file(mp3_path, as_attachment=True)
 
     except Exception as e:
-        flash(f"An error occurred: {str(e)}", "error")
         logging.error(f"Error during download or conversion: {str(e)}")
-        return redirect(url_for('home'))
+        return str(e), 500
 
 def convert_to_mp3(video_path):
     mp3_save_path = os.path.splitext(video_path)[0] + ".mp3"

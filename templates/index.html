@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Video Downloader</title>
+    <link rel="icon" href="https://example.com/favicon.ico"> <!-- Replace with your favicon link -->
     <style>
+        /* CSS Reset */
         * {
             margin: 0;
             padding: 0;
@@ -12,197 +14,160 @@
         }
 
         body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Arial', sans-serif;
+            background: #f0f2f5;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
         }
 
-        .wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100%;
-        }
-
-        .container {
-            background-color: #1f1f1f;
-            padding: 40px 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
-            width: 100%;
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
             text-align: center;
             animation: fadeIn 1s ease;
         }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .input-container {
-            margin-bottom: 20px;
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
+            animation: slideUp 1s ease;
+        }
+
+        label {
+            margin-bottom: 10px;
+            color: #555;
         }
 
         input[type="text"] {
+            padding: 10px;
             width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            background-color: #333;
-            color: #e0e0e0;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
         }
 
         input[type="text"]:focus {
+            border-color: #007bff;
             outline: none;
-            background-color: #444;
         }
 
         button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            background-color: #6200ea;
+            background: #007bff;
             color: #fff;
-            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        button i {
-            margin-right: 8px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #3700b3;
-            transform: translateY(-2px);
+            background: #0056b3;
         }
 
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #6200ea;
+        #loader {
+            margin-top: 15px;
+            border: 4px solid #f3f3f3;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
         }
 
-        .messages {
-            margin-top: 20px;
+        #message {
+            margin-top: 15px;
+            font-size: 1rem;
         }
 
-        .message {
-            background-color: #333;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 5px;
-            animation: fadeIn 0.5s ease;
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <div class="container">
-            <h1>YouTube Video Downloader</h1>
-            <form id="download-form" action="{{ url_for('download_video') }}" method="POST">
-                <div class="input-container">
-                    <input type="text" id="url" name="url" placeholder="Enter YouTube URL" required>
-                </div>
-                <button type="submit" id="download-btn"><i class="fas fa-download"></i> Download</button>
-            </form>
-
-            <div class="loader" id="loader" style="display: none;"></div>
-
-            <div id="message-container"></div>
-
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="messages">
-                  {% for message in messages %}
-                    <div class="message">{{ message }}</div>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
-        </div>
-    </div>
+    <h1>YouTube Video Downloader</h1>
+    <form id="downloadForm" onsubmit="downloadVideo(event)">
+        <label for="url">Enter YouTube URL:</label>
+        <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=example" required>
+        <button type="submit">Download</button>
+    </form>
+    <div id="loader" style="display:none;"></div> <!-- Loading Spinner -->
+    <div id="message"></div> <!-- For displaying messages -->
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.getElementById('download-form');
+        function downloadVideo(event) {
+            event.preventDefault(); // Prevent page refresh
+            const urlInput = document.getElementById('url').value;
             const loader = document.getElementById('loader');
-            const messageContainer = document.getElementById('message-container');
-            const downloadButton = document.getElementById('download-btn');
+            const messageDiv = document.getElementById('message');
+            
+            // Clear previous messages
+            messageDiv.innerHTML = '';
 
-            form.addEventListener('submit', (e) => {
-                const urlInput = document.getElementById('url').value;
-
-                // Simple URL validation (ensure the input isn't empty or invalid)
-                if (!urlInput.trim()) {
-                    e.preventDefault();
-                    showMessage("Please enter a valid YouTube URL.", "error");
-                    return;
-                }
-
-                // Show loading spinner and hide the download button
-                downloadButton.disabled = true;
-                loader.style.display = 'block';
-            });
-
-            // Function to display messages dynamically
-            function showMessage(message, type) {
-                const msgDiv = document.createElement('div');
-                msgDiv.classList.add('message', type);
-                msgDiv.innerText = message;
-                messageContainer.appendChild(msgDiv);
-
-                // Remove the message after 5 seconds
-                setTimeout(() => {
-                    msgDiv.remove();
-                }, 5000);
+            if (!urlInput) {
+                messageDiv.innerHTML = '<p style="color: red;">Please enter a YouTube URL.</p>';
+                return;
             }
-        });
+
+            loader.style.display = 'block'; // Show loading spinner
+
+            // Send the request to Flask
+            fetch('/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    url: urlInput
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                loader.style.display = 'none'; // Hide loading spinner
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'video.mp3';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                messageDiv.innerHTML = '<p style="color: green;">Download successful!</p>';
+            })
+            .catch(error => {
+                loader.style.display = 'none'; // Hide loading spinner
+                messageDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+        }
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </body>
 </html>
